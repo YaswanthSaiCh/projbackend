@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
-const { expressJwt } = require("express-jwt");
+const { expressjwt: expressJwt } = require("express-jwt");
 
 exports.signUp = (req, res) => {
   const errorList = validationResult(req);
@@ -57,7 +57,34 @@ exports.signIn = (req, res) => {
     });
 };
 exports.signOut = (req, res) => {
+  res.clearCookie("token");
   res.json({
     message: "User signout",
   });
+};
+
+//protected routes
+exports.isSignedIn = expressJwt({
+  secret: process.env.SECRET_KEY,
+  algorithms: ["HS256"],
+  userProperty: "auth",
+});
+
+exports.isAuthenticated = (req, res, next) => {
+  const isAuth = req.profile && req.auth && req.profile._id === req.auth._id;
+  if (!isAuth) {
+    return res.status(403).json({
+      error: "Access Denied",
+    });
+  }
+  next();
+};
+
+exports.isAdmin = (req, res, next) => {
+  if (req.profile.role === 0) {
+    return res.status(403).json({
+      error: "You are not an authorized Admin",
+    });
+  }
+  next();
 };
