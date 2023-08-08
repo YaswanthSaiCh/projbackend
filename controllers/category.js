@@ -29,7 +29,13 @@ exports.getCategory = (req, res) => {
 };
 
 exports.getAllCategories = (req, res) => {
+  const limit = parseInt(req.query.limit) || 8;
+  const sortBy = req.query.sortBy || "_id";
   Category.find({})
+    .select("-photo")
+    .populate("category")
+    .sort([[sortBy, "asc"]])
+    .limit(limit)
     .then((allCategories) => {
       return res.status(200).json({ allCategories });
     })
