@@ -30,7 +30,7 @@ exports.signIn = (req, res) => {
   const { email, password } = req.body;
   if (!errorList.isEmpty()) {
     return res.status(422).json({
-      error: errorList,
+      error: errorList.array()[0].msg,
     });
   }
   User.findOne({ email })
