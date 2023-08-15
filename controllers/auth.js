@@ -7,7 +7,7 @@ exports.signUp = (req, res) => {
   const errorList = validationResult(req);
   const user = new User(req.body);
   if (!errorList.isEmpty()) {
-    return res.status(422).json(errorList);
+    return res.status(422).json({ error: errorList.array()[0].msg });
   }
   user
     .save()
