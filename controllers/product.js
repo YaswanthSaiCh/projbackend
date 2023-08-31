@@ -5,8 +5,8 @@ const fs = require("fs");
 
 exports.getProductById = (req, res, next, id) => {
   Product.findById(id)
+    .populate("category")
     .then((product) => {
-      product.populate("category");
       req.product = product;
       next();
     })
@@ -55,8 +55,8 @@ exports.createProduct = (req, res) => {
   });
 };
 
-exports.getProduct = (req, res, id) => {
-  req.product.photo = undefined;
+exports.getProduct = (req, res) => {
+  console.log(req.product);
   return res.json(req.product);
 };
 
@@ -71,35 +71,44 @@ exports.getProductPhoto = (req, res, next) => {
 exports.updateProduct = (req, res) => {
   const form = new formidable.IncomingForm();
   form.keepExtensions = true;
-  form.parse(req, (err, fields, file) => {
+
+  form.parse(req, async (err, fields, files) => {
     if (err) {
-      return res.status(400).json({ error: "Cannot update the file" });
+      return res.status(400).json({ error: "Error parsing form data" });
     }
 
-    const product = req.product;
-    product = _.extend(product, fields);
+    const { productId } = req.params;
 
-    if (file.photo) {
-      if (file.photo.size > 5242880) {
-        return res.status(400).json({ error: "File size is too big" });
+    try {
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(400).json({ error: "Product not found" });
       }
 
-      product.photo.data = fs.readFileSync(file.photo[0].filepath);
-      product.photo.contentType = file.photo[0].mimetype;
-      product.name = name[0];
-      product.description = description[0];
-      product.price = price[0];
-      product.category = category[0];
-      product.stock = stock[0];
-    }
-    product
-      .save()
-      .then((product) => res.json(product))
-      .catch((err) => {
-        if (err) {
-          return res.status(400).json({ error: "Error saving product in DB" });
+      // Update product fields based on the parsed form data
+      product.name = String(fields.name) || product.name;
+      product.description = String(fields.description) || product.description;
+      product.price = Number(fields.price) || product.price;
+      product.category = String(fields.category) || product.category;
+      product.stock = Number(fields.stock) || product.stock;
+
+      // Update the photo if a new one is provided
+      if (files.photo) {
+        if (files.photo.size > 5242880) {
+          return res.status(400).json({ error: "File size is too big" });
         }
-      });
+
+        product.photo.data = fs.readFileSync(files.photo.path);
+        product.photo.contentType = files.photo.type;
+      }
+
+      // Save the updated product
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
+    } catch (error) {
+      return res.status(400).json({ error: "Error updating product" });
+    }
   });
 };
 
@@ -121,7 +130,13 @@ exports.deleteProduct = (req, res) => {
 };
 
 exports.getAllProducts = (req, res) => {
+  const limit = parseInt(req.query.limit) || 8;
+  const sortBy = req.query.sortBy || "_id";
   Product.find({})
+    .select("-photo")
+    .populate("category")
+    .sort([[sortBy, "asc"]])
+    .limit(limit)
     .then((allProducts) => {
       return res.status(200).json({ allProducts });
     })

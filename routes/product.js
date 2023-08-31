@@ -27,7 +27,7 @@ router.post(
 router.get("/product/:productId", getProduct);
 router.get("/product/photo/:productId", getProductPhoto);
 router.put(
-  "/product/update/:productId/:userId",
+  "/product/:productId/:userId",
   isSignedIn,
   isAuthenticated,
   isAdmin,
@@ -40,7 +40,7 @@ router.delete(
   isAdmin,
   deleteProduct
 );
-router.get("/product/all", getAllProducts);
+router.get("/allproducts", getAllProducts);
 router.get("/product/all/categories", getAllUniqueCategories);
 
 module.exports = router;
