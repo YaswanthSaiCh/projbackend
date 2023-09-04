@@ -56,7 +56,6 @@ exports.createProduct = (req, res) => {
 };
 
 exports.getProduct = (req, res) => {
-  console.log(req.product);
   return res.json(req.product);
 };
 

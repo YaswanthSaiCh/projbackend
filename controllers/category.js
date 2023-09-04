@@ -1,6 +1,6 @@
 const Category = require("../models/category");
 
-exports.getCategoryId = (req, res, next, id) => {
+exports.getCategoryById = (req, res, next, id) => {
   Category.findById(id)
     .then((category) => {
       req.category = category;
