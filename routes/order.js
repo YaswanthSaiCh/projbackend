@@ -15,7 +15,7 @@ router.param("userId", getUserById);
 router.param("orderId", getOrderById);
 
 router.post(
-  "order/create/:userId",
+  "/order/create/:userId",
   isSignedIn,
   isAuthenticated,
   pushOrderInPurchaseList,

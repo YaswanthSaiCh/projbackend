@@ -45,7 +45,7 @@ exports.getOrderStatus = (req, res) => {
 exports.updateOrderStatus = (req, res) => {
   Order.findOneAndUpdate(
     { _id: req.body.orderId },
-    { $set: { status: q.body.status } }
+    { $set: { status: req.body.status } }
   )
     .then((updatedOrder) => {
       res.json(updatedOrder);

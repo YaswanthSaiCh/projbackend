@@ -159,7 +159,9 @@ exports.updateStock = (req, res, next) => {
     return {
       updateOne: {
         filter: { _id: product._id },
-        update: { $inc: { stock: -product.count, sold: +product.count } },
+        update: {
+          $inc: { stock: -product.count || -1, sold: +product.count || +1 },
+        },
       },
     };
   });
@@ -168,7 +170,8 @@ exports.updateStock = (req, res, next) => {
       next();
     })
     .catch((err) => {
-      if (err)
+      if (err) {
         return res.status(400).json({ error: "Bulk operation is failed" });
+      }
     });
 };
